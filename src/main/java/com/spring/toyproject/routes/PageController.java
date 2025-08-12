@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  * 페이지 전환 렌더링용 컨트롤러
- * Tyymeleaf나 JSP 같은 뷰템플릿 페이지를 랜더링
+ * Thymeleaf나 JSP같은 뷰템플릿 페이지를 렌더링
  */
 @Controller
 @Slf4j
@@ -17,16 +17,26 @@ public class PageController {
     public String home() {
         return "index";
     }
-
-    // 로그인 페이지로 이동
+    // 로그인페이지으로 이동
     @GetMapping("/login")
     public String login() {
         return "login";
     }
-
     // 회원가입 페이지로 이동
     @GetMapping("/signup")
     public String signup() {
         return "signup";
+    }
+
+    // 대시보드 페이지로 이동
+    @GetMapping("/dashboard")
+    public String dashboard() {
+        return "dashboard";
+    }
+
+    // 여행목록 페이지로 이동
+    @GetMapping("/trips")
+    public String trips() {
+        return "trip-list";
     }
 }
