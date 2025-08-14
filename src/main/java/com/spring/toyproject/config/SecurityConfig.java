@@ -51,7 +51,7 @@ public class SecurityConfig {
                                         , "/trips/**"
                                         , "/dashboard"
                                 ).permitAll()
-                                .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                                .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico", "/uploads/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll()
 
                                 // 인증 및 권한이 필요한 경로
@@ -61,12 +61,12 @@ public class SecurityConfig {
                                 // 기타 경로
                                 // 모든 다른 요청은 인증이 필요하다
                                 .anyRequest().authenticated()
-                        )
+                )
 
 
                 // 커스텀 필터 설정
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                ;
+        ;
 
         return http.build();
     }
