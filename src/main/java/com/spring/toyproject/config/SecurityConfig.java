@@ -61,12 +61,12 @@ public class SecurityConfig {
                                 // 기타 경로
                                 // 모든 다른 요청은 인증이 필요하다
                                 .anyRequest().authenticated()
-                )
+                        )
 
 
                 // 커스텀 필터 설정
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        ;
+                ;
 
         return http.build();
     }

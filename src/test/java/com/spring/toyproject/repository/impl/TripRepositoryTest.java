@@ -1,11 +1,5 @@
 package com.spring.toyproject.repository.impl;
 
-import com.spring.toyproject.domain.entity.Trip;
-import com.spring.toyproject.domain.entity.TripStatus;
-import com.spring.toyproject.domain.entity.User;
-import com.spring.toyproject.repository.base.TripRepository;
-import com.spring.toyproject.repository.base.UserRepository;
-import com.spring.toyproject.repository.custom.TripRepositoryCustom;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
