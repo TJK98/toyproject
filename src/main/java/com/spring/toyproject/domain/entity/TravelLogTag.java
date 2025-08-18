@@ -5,32 +5,31 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
 /**
- * 다대다 관계를 해소하는 중간 행위 테이블
- * FK를 2개 갖고 있음
- * 어떤 일지에 어떤 태그가 달렸는지 로그 파일처럼 누적 저장
+ * 다대다 관계를 해소하는 중간 행위테이블
+ * fk를 2개 갖고 있음
+ * 어떤 여행일지에 어떤 태그가 달렸는지를 로그파일처럼 누적저장
  *
- * 식별 관계를 할 것이냐 비식별 관계로 구현할 것이냐
+ * 식별관계를 할 것이냐 비식별관계로 구현할 것이냐?
  *
- * 식별 관계 (강한 의존 관계)
+ * 식별관계 (강한 의존관계)
  * CREATE TABLE travel_log_tag (
- *      travel_log_id (FK)
- *      tag_id (FK)
- *      CONSTRAINT pk_tv_log_tag PRIMARY KEY (travel_log_id, tag_id)
+ *  travel_log_id  (FK, PK)
+ *  tag_id         (FK, PK)
+ *  CONSTRAINT pk_tv_log_tag PRIMARY KEY (travel_log_id, tag_id)
  * );
  *
- * JPA 구성 단계에서는 실제로 ID를 사용하지 않더라도 약학 의존 관계를 위하여 ID를 추가한다.
- * 비식별 관계 (약한 의존 관계)
- * CREATE TABLE travel_log_tag (
- *      id (PK)
- *      travel_log_id (FK)
- *      tag_id (FK)
- *      CONSTRAINT pk_tv_log_tag PRIMARY KEY (travel_log_id, tag_id)
- * );
+ * 비식별관계 (약한 의존관계)
+ *  CREATE TABLE travel_log_tag (
+ *   id (PK)
+ *   travel_log_id  (FK)
+ *   tag_id         (FK)
+ *  );
  */
 @Entity
 @Table(name = "travel_log_tags")
@@ -50,7 +49,7 @@ public class TravelLogTag {
     @JoinColumn(name = "tag_id", nullable = false)
     private Tag tag;
 
-    @CreatedDate
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

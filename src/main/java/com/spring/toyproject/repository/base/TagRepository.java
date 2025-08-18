@@ -15,7 +15,17 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
     Optional<Tag> findByName(String name);
 
     /**
+     * 태그 중복 확인
+     */
+    boolean existsByName(String name);
+
+    /**
      * 카테고리별 태그 목록 조회
      */
     List<Tag> findByCategoryOrderByName(TagCategory category);
+
+    /**
+     * 태그 이름이 포함된 태그 목록 조회
+     */
+    List<Tag> findByNameContainingOrderByName(String keyword);
 }
