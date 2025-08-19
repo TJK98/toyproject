@@ -52,9 +52,21 @@ public class PageController {
         return "trip-detail";
     }
 
+
     // 여행 일지등록 페이지
     @GetMapping("/travel-logs/new")
     public String travelForm() {
         return "travel-log-form";
+    }
+
+    // 여행 일지 목록 페이지
+    @GetMapping("/travel-logs")
+    public String travelList() {
+        return "travel-log-list";
+    }
+    // 여행 일지 상세보기 페이지
+    @GetMapping("/travel-logs/detail")
+    public String travelDetail() {
+        return "travel-log-detail";
     }
 }

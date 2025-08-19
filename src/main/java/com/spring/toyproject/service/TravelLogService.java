@@ -2,12 +2,18 @@ package com.spring.toyproject.service;
 
 import com.spring.toyproject.config.FileUploadConfig;
 import com.spring.toyproject.domain.dto.request.TravelLogRequestDto;
+import com.spring.toyproject.domain.dto.response.TagResponseDto;
+import com.spring.toyproject.domain.dto.response.TravelLogResponseDto;
+import com.spring.toyproject.domain.dto.response.TravelPhotoResponseDto;
 import com.spring.toyproject.domain.entity.*;
 import com.spring.toyproject.exception.BusinessException;
 import com.spring.toyproject.exception.ErrorCode;
 import com.spring.toyproject.repository.base.*;
+import com.spring.toyproject.repository.custom.TravelLogRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,8 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -31,6 +37,7 @@ public class TravelLogService {
     private final UserRepository userRepository;
     private final TravelPhotoRepository travelPhotoRepository;
     private final TagRepository tagRepository;
+    private final TravelLogTagRepository travelLogTagRepository;
 
     /**
      * 여행일지 생성
@@ -130,5 +137,84 @@ public class TravelLogService {
             }
 
         }
+    }
+
+    /**
+     * 여행별 여행일지 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public Page<TravelLogResponseDto> getTravelLogsByTrip(String username, Long tripId, TravelLogRepositoryCustom.TravelLogSearchCondition condition, Pageable pageable) {
+
+        // 사용자 조회
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        Page<TravelLog> responseData;
+
+        // 여행 ID가 없이 전체여행의 일지 조회를 원하는 경우 사용자ID로 모든 여행일지를 조회한다.
+        if (tripId == null) {
+            responseData = travelLogRepository.findTravelLogsByUserId(user.getId(), condition, pageable);
+        } else {
+            // 여행정보 조회
+            Trip trip = tripRepository.findByIdAndUser(tripId, user)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.TRIP_NOT_FOUND));
+
+            // 여행별 여행일지 조회
+            responseData = travelLogRepository.findTravelLogsByTrip(trip, condition, pageable);
+        }
+
+        return responseData.map(res -> TravelLogResponseDto.from(res, getCoverImgUrl(res)));
+    }
+
+    /**
+     * 이미지 대표 썸네일 경로 가져오기
+     */
+    private String getCoverImgUrl(TravelLog travelLog) {
+        List<TravelPhoto> travelPhotos = travelLog.getTravelPhotos();
+        if (travelPhotos != null && !travelPhotos.isEmpty()) {
+            TravelPhoto travelPhoto = travelPhotos.stream()
+                    .sorted(Comparator.comparing(TravelPhoto::getDisplayOrder))
+                    .findFirst()
+                    .orElseThrow();
+            return travelPhoto.getFilePath();
+        }
+        return null;
+    }
+
+    @Transactional(readOnly = true)
+    public TravelLogResponseDto getTravelLogDetail(String username, Long travelLogId) {
+
+        // 여행 일지 1개 불러오기
+        TravelLog travelLog = travelLogRepository.findById(travelLogId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_LOG_NOT_FOUND));
+
+        // 여행일지가 사용자의 여행에 속하는지 다시한번 확인
+        if (!travelLog.getTrip().getUser().getUsername().equals(username)) {
+            throw new BusinessException(ErrorCode.TRAVEL_LOG_ACCESS_DENIED);
+        }
+
+        return TravelLogResponseDto.from(travelLog);
+    }
+
+    // 여행일지의 해시태그 목록 가져오기
+    public List<TagResponseDto> getTagsByTravelLog(String username, Long travelLogId) {
+
+        List<Tag> tags = travelLogTagRepository.findTagsByTravelLogId(travelLogId);
+        return tags.stream().map(TagResponseDto::from).collect(Collectors.toList());
+    }
+
+    public List<TravelPhotoResponseDto> getPhotos(Long travelLogId, String username) {
+
+        // 여행일지 조회
+        TravelLog travelLog = travelLogRepository.findById(travelLogId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_LOG_NOT_FOUND));
+
+        List<TravelPhoto> photos
+                = travelPhotoRepository.findByTravelLogOrderByDisplayOrderAsc(travelLog);
+
+        return photos.stream()
+                .map(TravelPhotoResponseDto::from)
+                .collect(Collectors.toList());
+
     }
 }
